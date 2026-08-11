@@ -1,0 +1,10 @@
+Four-Player-XOR-Games
+Copyright 2026 QuAIR
+
+The Lean development depends on QuAIR/Lean-QIT at the revision pinned in
+formalization/lakefile.toml.  Lean-QIT is fetched as an external Lake package
+and is not redistributed in this repository.  Lean-QIT and the local Lean
+sources are available under the Apache License 2.0.
+
+The manuscript is distributed separately from the software license and
+remains subject to the authors' and publisher's applicable publication terms.

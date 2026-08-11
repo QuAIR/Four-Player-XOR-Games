@@ -1,0 +1,17 @@
+{
+  "name": "Klein four-group XOR game",
+  "players": ["0", "a", "b", "c"],
+  "question_labels": ["0", "a", "b", "c"],
+  "weight": "1/8",
+  "clauses": [
+    {"name": "E_0", "questions": ["0", "0", "0", "0"], "target": 0},
+    {"name": "E_a", "questions": ["a", "a", "a", "a"], "target": 0},
+    {"name": "E_b", "questions": ["b", "b", "b", "b"], "target": 0},
+    {"name": "E_c", "questions": ["c", "c", "c", "c"], "target": 0},
+    {"name": "O_0", "questions": ["0", "a", "b", "c"], "target": 1},
+    {"name": "O_a", "questions": ["a", "0", "c", "b"], "target": 0},
+    {"name": "O_b", "questions": ["b", "c", "0", "a"], "target": 0},
+    {"name": "O_c", "questions": ["c", "b", "a", "0"], "target": 0}
+  ],
+  "pref": {"E": -1, "O": 1}
+}

@@ -1,0 +1,12 @@
+.DS_Store
+__pycache__/
+*.pyc
+.lake/
+*.aux
+*.bbl
+*.blg
+*.log
+*.out
+*.toc
+*.synctex.gz
+paper/_build/

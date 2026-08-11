@@ -1,0 +1,21 @@
+name: Verify
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: leanprover/lean-action@v1
+        with:
+          lake-package-directory: formalization
+          use-mathlib-cache: true
+      - name: Exact checks
+        run: |
+          python3 -m unittest discover -s tests -v
+          python3 computations/check_klein_pref.py
+          python3 computations/check_magnus_certificate.py
+          python3 computations/check_paircount_identities.py
