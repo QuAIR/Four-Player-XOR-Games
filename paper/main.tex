@@ -6,6 +6,9 @@
 % \usepackage[a4paper,margin=31mm]{geometry}
 \usepackage{fullpage}
 \usepackage{booktabs}
+\usepackage{longtable}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta,positioning}
 \usepackage[numbers,sort&compress]{natbib}
 \usepackage{microtype}
 \usepackage{mathpazo}
@@ -1757,5 +1760,208 @@ Exploratory computation and the generalization of proofs in the present work wer
 
 \bibliographystyle{alpha}
 \bibliography{references}
+
+\appendix
+\section{Lean correspondence}\label{app:lean}
+
+The accompanying development~\cite{FourPlayerXORGames2026} formalizes the
+principal threshold theorem and its obstruction-space formulation in
+Lean~4~\cite{deMouraUllrich2021}, using Mathlib~\cite{mathlib2020} and the
+Lean-QIT library~\cite{ZhuEtAl2026LeanQIT}.  Lean-QIT is imported as the
+external Lake package \texttt{QIT}; it is not vendored into the accompanying
+repository.  Figure~\ref{fig:lean-dependencies} displays the dependency graph
+for the two parts of Theorem~\ref{thm:main}.  Table~\ref{tab:lean-correspondence}
+gives the statement-by-statement correspondence.
+
+The status \emph{direct} means that the Lean declaration states the
+manuscript conclusion up to notation and packaging.  \emph{Partial} marks a
+proper part of a manuscript statement, \emph{supporting} marks a conditional
+component or a consequence used by a directly formalized result, and
+\emph{alternative} marks an application-specific combinatorial route in place
+of the more general lemma stated in the manuscript.  This distinction is
+material for the exact-multiplicity circuit statement, the refutation clause
+of Theorem~\ref{thm:cayley-cyclic}, and the general Magnus lemma: their
+downstream conclusions are kernel checked, but the labeled intermediate
+statements are not each reproduced verbatim in Lean.
+
+\begin{figure}[t]
+\centering
+\resizebox{0.94\textwidth}{!}{%
+\begin{tikzpicture}[
+  result/.style={draw=blue!65!black, fill=blue!7, rounded corners,
+    align=center, minimum height=8mm, text width=39mm},
+  ingredient/.style={draw=black!60, fill=black!3, rounded corners,
+    align=center, minimum height=8mm, text width=38mm},
+  edge/.style={-{Stealth[length=2mm]}, semithick}
+]
+\node[result] (main) {Theorem~\ref{thm:main}\\sharp threshold};
+\node[result, below left=12mm and 24mm of main] (positive)
+  {Theorem~\ref{thm:main}(i)\\three-question equivalence};
+\node[result, below right=12mm and 24mm of main] (negative)
+  {Theorem~\ref{thm:main}(ii)\\Klein separation};
+\node[ingredient, below=11mm of positive] (obstruction)
+  {Corollary~\ref{cor:obstruction-exactness}\\obstruction-space exactness};
+\node[ingredient, below=11mm of negative] (vfour)
+  {Klein PREF and\\all-length no-refutation theorem};
+\node[ingredient, below=11mm of obstruction] (circuits)
+  {primitive-circuit generation\\and parity lifting};
+\node[ingredient, below=11mm of circuits] (geometry)
+  {forest matchings and\\ternary Hamming geometry};
+\node[ingredient, below left=11mm and 13mm of vfour] (pref)
+  {exact PREF certificate};
+\node[ingredient, below right=11mm and 13mm of vfour] (alllength)
+  {specialized pair-count\\and deletion invariants};
+\draw[edge] (main) -- (positive);
+\draw[edge] (main) -- (negative);
+\draw[edge] (positive) -- (obstruction);
+\draw[edge] (negative) -- (vfour);
+\draw[edge] (obstruction) -- (circuits);
+\draw[edge] (circuits) -- (geometry);
+\draw[edge] (vfour) -- (pref);
+\draw[edge] (vfour) -- (alllength);
+\end{tikzpicture}%
+}
+\caption{Core dependency graph for the Lean formalization.  Arrows point
+from a conclusion to its principal ingredients.}
+\label{fig:lean-dependencies}
+\end{figure}
+
+\begingroup
+\footnotesize
+\setlength{\tabcolsep}{4pt}
+\begin{longtable}{@{}p{0.22\textwidth}p{0.58\textwidth}p{0.12\textwidth}@{}}
+\caption{Correspondence between manuscript statements and Lean
+declarations.}\label{tab:lean-correspondence}\\
+\toprule
+Manuscript statement & Principal Lean declaration(s) & Status \\
+\midrule
+\endfirsthead
+\multicolumn{3}{c}{\tablename~\thetable\ (continued)}\\
+\toprule
+Manuscript statement & Principal Lean declaration(s) & Status \\
+\midrule
+\endhead
+\midrule
+\multicolumn{3}{r}{Continued on next page}\\
+\endfoot
+\bottomrule
+\endlastfoot
+Theorem~\ref{thm:main}(i) &
+\path{QIT.XORGame.commutingOperatorValue_eq_one_iff_hasPerfectMERP_of_activeQuestionBound_le_three}
+& Direct \\
+Theorem~\ref{thm:main}(ii) and sharpness &
+\path{QIT.XORGame.v4_value_one};
+\path{QIT.XORGame.v4_no_MERP};
+\path{QIT.XORGame.four_is_sharp_threshold}
+& Direct \\
+Proposition~\ref{prop:weight-reduction} &
+\path{QIT.XORGame.commutingOperatorValue_eq_one_iff_of_support_eq};
+\path{QIT.XORGame.weightedValue_lt_one_of_uniformValue_lt_one}
+& Partial \\
+Theorem~\ref{thm:exact-circuit-lifting} &
+\path{QIT.XORGame.primitiveCircuit_lifts_fourByThree}
+& Supporting \\
+Corollary~\ref{cor:obstruction-exactness} &
+\path{QIT.XORGame.obstructionSpaces_eq_fourByThree}
+& Direct \\
+Lemma~\ref{lem:alternating-lift} &
+\path{QIT.XORGame.balancedWord_alternatingLift_isIntegerRelation};
+\path{QIT.XORGame.alternatingLift_mod_two}
+& Direct \\
+Proposition~\ref{prop:circuit-generation} &
+\path{QIT.XORGame.primitiveCircuits_closure_eq_kernel};
+\path{QIT.XORGame.everyIntegerRelationHasBalancedLift_of_primitiveCircuits}
+& Direct \\
+Lemma~\ref{lem:no-singleton-block} &
+\path{QIT.XORGame.fullCircuit_questionFiber_card_ne_one}
+& Direct \\
+Proposition~\ref{prop:rank-cap} &
+\path{QIT.XORGame.fullRationalCircuit_card_eq_rank_add_one};
+\path{QIT.XORGame.rationalIncidence_rank_le_usedQuestions};
+\path{QIT.XORGame.fourByThree_primitiveCircuit_card_le_ten}
+& Direct \\
+Lemma~\ref{lem:exact-multiplicity} &
+\path{QIT.XORGame.parityPairing_occurrenceParity};
+\path{QIT.XORGame.exactMultiplicityBalancedLift_hasBalancedLift}
+& Supporting \\
+Lemma~\ref{lem:ordering} &
+\path{QIT.XORGame.InvolutionWord.reducesToEmpty_of_toFinset_card_le_two_of_alternatingSum_zero};
+\path{QIT.XORGame.exists_bipartiteLinearForestAlternatingLayout}
+& Direct \\
+Proposition~\ref{prop:selected-block} &
+\path{QIT.XORGame.selectedBlockLinearForest_exactMultiplicityBalancedLift}
+& Direct \\
+Proposition~\ref{prop:three-color} &
+\path{QIT.XORGame.threeColor_colorwiseMatching_linearForest}
+& Direct \\
+Proposition~\ref{prop:four-singleton} &
+\path{QIT.XORGame.ColorSignatureSystem.linearForestMatching_of_singleton}
+& Direct \\
+Proposition~\ref{prop:four-ternary-reduction} &
+\path{QIT.XORGame.hasExactMultiplicityBalancedLift_of_ternaryPlayers_card_le_three}
+& Direct \\
+Lemma~\ref{lem:separation-packing} &
+\path{QIT.XORGame.safeCenters_card_le_six_of_even_separated};
+\path{QIT.XORGame.evenSupportDistances_separated_of_sharedBlockMissingCell_escape}
+& Partial \\
+Lemma~\ref{lem:safe-excess} &
+\path{QIT.XORGame.safeHole_neighborhood_excess}
+& Direct \\
+Proposition~\ref{prop:subnine} &
+\path{QIT.XORGame.atMostEight_exactLift_of_nonliftable_even_separated}
+& Supporting \\
+Lemma~\ref{lem:nine-independence} &
+\path{QIT.XORGame.nineBallCover_rationalIncidence_linearIndependent}
+& Direct \\
+Proposition~\ref{prop:nine} &
+\path{QIT.XORGame.nineClause_exactLift_of_nonliftable_even_separated}
+& Supporting \\
+Proposition~\ref{prop:ten-noncover} &
+\path{QIT.XORGame.tenClause_noncovering_geometry_impossible}
+& Supporting \\
+Proposition~\ref{prop:ten-cover} &
+\path{QIT.XORGame.tenBallCover_structural_contradiction};
+\path{QIT.XORGame.tenBallCover_not_fullRationalCircuit}
+& Supporting \\
+Theorem~\ref{thm:cayley-cyclic} &
+\path{QIT.Research.FourXOR.hasCommonNoncrossingOrder_iff_isCyclic};
+\path{QIT.Research.FourXOR.cyclic_cayley_has_true_refutation}
+& Partial \\
+Lemma~\ref{lem:cayley-chord} &
+\path{QIT.Research.FourXOR.NestedWord.equalPairs_noncrossing};
+\path{QIT.Research.FourXOR.NestedWord.reducible}
+& Supporting \\
+Lemma~\ref{lem:cayley-side} &
+\path{QIT.Research.FourXOR.same_side}
+& Direct \\
+Lemma~\ref{lem:cayley-generator} &
+\path{QIT.Research.FourXOR.S_succ_dj_eq_d};
+\path{QIT.Research.FourXOR.S_pow}
+& Partial \\
+Lemma~\ref{lem:even-subgroup} &
+reduction interfaces in \path{FourXOR.AllLength} and
+\path{FourXOR.AllLengthGame}
+& Alternative \\
+Lemma~\ref{lem:magnus-conditions} &
+\path{QIT.Research.FourXOR.altSum_reducible};
+\path{QIT.Research.FourXOR.pairSum_reducible}
+& Alternative \\
+Elementary-abelian all-length conclusion &
+\path{QIT.Research.FourXOR.cayley_f2r_hasPREF_and_no_refutation}
+& Direct \\
+\end{longtable}
+\endgroup
+
+The source tree contains no \texttt{sorry}, \texttt{admit}, or manually
+declared axiom.  The repository additionally runs \texttt{\#print axioms}
+on the paper-facing declarations.  Their dependency sets contain Lean's
+standard \texttt{propext}, \texttt{Classical.choice}, and
+\texttt{Quot.sound}.  The three-question circuit argument also uses seven
+explicitly enumerated \texttt{native\_decide} bridge axioms for finite
+cardinality and Hamming-space computations; the Klein witness, translation
+matching classification, and elementary-abelian all-length theorem use only
+the three standard axioms.  The tracked toolchain, Lake manifest, exact
+certificate scripts, and full declaration map are included in the
+accompanying repository~\cite{FourPlayerXORGames2026}.
 
 \end{document}
