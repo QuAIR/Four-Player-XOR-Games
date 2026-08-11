@@ -1,8 +1,9 @@
 # A Sharp Local-Question Threshold for GHZ-Equatorial Strategies in Four-Player XOR Games
 
-This repository contains the manuscript, Lean 4 formalization, and exact
-algebraic checks accompanying the paper *A Sharp Local-Question Threshold for
-GHZ-Equatorial Strategies in Four-Player XOR Games*.
+This repository contains the Lean 4 formalization and exact algebraic checks
+accompanying the paper *A Sharp Local-Question Threshold for GHZ-Equatorial
+Strategies in Four-Player XOR Games*.  The manuscript source and rendered PDF
+are distributed separately and are not included here.
 
 The main result identifies four as the smallest active local-question bound at
 which a perfect four-player binary XOR game in the commuting-operator model
@@ -13,7 +14,6 @@ has commuting-operator value one but inconsistent MERP phase equations.
 
 ## Contents
 
-- [`paper/`](paper/) contains the manuscript source, bibliography, and compiled PDF.
 - [`formalization/`](formalization/) contains one Lean project for the results of the paper.
 - [`instances/klein_v4.json`](instances/klein_v4.json) is the eight-clause witness in the paper.
 - [`computations/`](computations/) contains exact checks of the PREF and Magnus certificates.
@@ -103,13 +103,6 @@ python3 computations/check_paircount_identities.py
 The computations use exact integer and rational arithmetic.  They check the
 displayed certificates; the all-length mathematical conclusion does not rely
 on a finite search over refutation words.
-
-The manuscript can be compiled with Tectonic:
-
-```bash
-cd paper
-tectonic main.tex
-```
 
 ## Scope
 
