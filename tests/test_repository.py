@@ -4,6 +4,7 @@ import json
 from pathlib import Path
 import re
 import subprocess
+import tempfile
 import unittest
 
 
@@ -17,9 +18,6 @@ class PublicRepositoryTest(unittest.TestCase):
             "LICENSE",
             "NOTICE",
             "CITATION.cff",
-            "paper/main.tex",
-            "paper/main.pdf",
-            "paper/references.bib",
             "formalization/README.md",
             "formalization/FORMALIZATION.md",
             "formalization/FourPlayerXORGames.lean",
@@ -34,6 +32,30 @@ class PublicRepositoryTest(unittest.TestCase):
         }
         missing = sorted(path for path in expected if not (ROOT / path).is_file())
         self.assertEqual(missing, [])
+
+    def test_repository_excludes_manuscript_source_and_rendered_artifacts(self) -> None:
+        forbidden_suffixes = {".bib", ".pdf", ".tex"}
+        artifacts = sorted(
+            path.relative_to(ROOT).as_posix()
+            for path in ROOT.rglob("*")
+            if path.is_file()
+            and ".git" not in path.parts
+            and ".lake" not in path.parts
+            and path.suffix.lower() in forbidden_suffixes
+        )
+        self.assertEqual(artifacts, [])
+        stale_ignore_patterns = {
+            "*.aux",
+            "*.bbl",
+            "*.blg",
+            "*.log",
+            "*.out",
+            "*.synctex.gz",
+            "*.toc",
+            "paper/_build/",
+        }
+        gitignore_patterns = set((ROOT / ".gitignore").read_text().splitlines())
+        self.assertEqual(sorted(stale_ignore_patterns & gitignore_patterns), [])
 
     def test_readme_maps_paper_results_and_emphasizes_qit_import(self) -> None:
         path = ROOT / "README.md"
@@ -123,9 +145,24 @@ class PublicRepositoryTest(unittest.TestCase):
     def test_lean_sources_have_no_placeholders_or_new_axioms(self) -> None:
         forbidden = re.compile(r"\b(sorry|admit|axiom)\b")
         hits: list[str] = []
-        for path in (ROOT / "formalization").rglob("*.lean"):
-            if match := forbidden.search(path.read_text()):
-                hits.append(f"{path.relative_to(ROOT)}:{match.group(0)}")
+        packages = ROOT / "formalization" / ".lake" / "packages"
+        packages.mkdir(parents=True, exist_ok=True)
+        with (
+            tempfile.TemporaryDirectory(prefix="ci-dependency-", dir=packages) as temporary,
+            tempfile.TemporaryDirectory(prefix="owned-source-", dir=ROOT / "formalization") as owned_temporary,
+        ):
+            dependency = Path(temporary) / "Dependency.lean"
+            dependency.write_text("theorem dependency_placeholder : True := by sorry\n")
+            owned_source = Path(owned_temporary) / "OwnedSource.lean"
+            owned_source.write_text("theorem owned_placeholder : True := by admit\n")
+            for path in (ROOT / "formalization").rglob("*.lean"):
+                if ".lake" in path.parts:
+                    continue
+                if match := forbidden.search(path.read_text()):
+                    hits.append(f"{path.relative_to(ROOT)}:{match.group(0)}")
+            owned_hit = f"{owned_source.relative_to(ROOT)}:admit"
+            self.assertIn(owned_hit, hits)
+            hits.remove(owned_hit)
         self.assertEqual(hits, [])
 
     def test_every_lean_module_is_reachable_from_public_aggregator(self) -> None:
